@@ -1,0 +1,630 @@
+-------------- IDX 2 --------------
+Correct categories:
+Row: 24
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/lattice/quda/commit/0dd4f75396999b649c759946fe0b53e6cd12aae0
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 3 --------------
+Correct categories:
+Row: 146
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/gromacs/gromacs/commit/2f23bc394ba7d47d851260fc9caa01fcd022c05f
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 12 --------------
+Correct categories:
+Row: 13
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/openmm/openmm/commit/b1be68d873e649ab07ae6c65f017163066373123
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 15 --------------
+Correct categories:
+Row: 7
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/cp2k/cp2k/commit/7b34ac6ca470a6a5a2d71d2027d577b08f0dac92
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 19 --------------
+Correct categories:
+Row: 169
+Category: 7) Inefficient memory management
+Sub-Category: 7.1) memory leak
+Link: https://github.com/arrayfire/arrayfire/commit/498598d05c6d434c8f785ff1d1a3227369149f31
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 29 --------------
+Correct categories:
+Row: 126
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/openmm/openmm/commit/84691dc465f58f60341b196657276ddc381e6f59
+-------------------------------
+Reponse from GPT:
+Category 2: Missing parallelism
+-------------- IDX 30 --------------
+Correct categories:
+Row: 94
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.1) Unnecessary operation/traversal/function call
+Link: https://github.com/OpenFOAM/OpenFOAM-dev/commit/91e84b9004c4a9be2c135465617783f21d28dc71
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 32 --------------
+Correct categories:
+Row: 55
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.2) Micro-architectural inefficiency
+Link: https://github.com/arrayfire/arrayfire/commit/8b9756e8f31303110a195326319f4782bf9cdb54
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 33 --------------
+Correct categories:
+Row: 166
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.6) Usage of improper data type
+Link: https://github.com/openmm/openmm/commit/5b017677e1add9ac33b318c73fad21c04ff93287
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 34 --------------
+Correct categories:
+Row: 182
+Category: 9) Unintentional Programming logic error
+No subcategory
+Link: https://github.com/xianyi/OpenBLAS/commit/274d6e015b56a9f0ccad928232ed3bd88a063754
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 37 --------------
+Correct categories:
+Row: 32
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/xianyi/OpenBLAS/commit/831858b88351e350c9f6ad5c2d7f0c70d4cce18c
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 38 --------------
+Correct categories:
+Row: 129
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/lattice/quda/commit/e04b189e232392b36d0140bdb53bd5d0af9d05b6
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 41 --------------
+Correct categories:
+Row: 89
+Category: 4) Inefficient Concurrency control and synchronization
+Sub-Category: 4.3) Lock management overhead
+Link: https://github.com/xianyi/OpenBLAS/commit/208c7e7ca50a8bfdfabbec750bdc538023c94aed
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 42 --------------
+Correct categories:
+Row: 158
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.5) Inefficient data-structure library
+Link: https://github.com/OpenFOAM/OpenFOAM-dev/commit/51247eec60699983f41f3b1298080a08612ef8bb
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 43 --------------
+Correct categories:
+Row: 60
+Category: 2) Missing parallelism
+Sub-Category: 2.1) Vector/SIMD parallelism
+Link: https://github.com/xianyi/OpenBLAS/commit/1b1a757f5f389b9496f016defaecccb63c415fa6
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 44 --------------
+Correct categories:
+Row: 30
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/gromacs/gromacs/commit/cb313c7e66b36b25e4c54db9934cad613418ecd1
+-------------------------------
+Reponse from GPT:
+No performance related bugs found in the given code.
+-------------- IDX 45 --------------
+Correct categories:
+Row: 105
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.1) Unnecessary operation/traversal/function call
+Link: https://github.com/hypre-space/hypre/commit/827e7997de0179d9ed0787ff0c307e36ceb2ecbc
+-------------------------------
+Reponse from GPT:
+No performance related bugs found in the given code.
+-------------- IDX 56 --------------
+Correct categories:
+Row: 39
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.2) Micro-architectural inefficiency
+Link: https://github.com/lattice/quda/commit/c3d7cba1d197a8c153ac639f41f98a4c76a0fd89
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 57 --------------
+Correct categories:
+Row: 100
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.1) Unnecessary operation/traversal/function call
+Link: https://github.com/mlpack/mlpack/commit/18f4b5ce035f0f4cd37bbe4436795d93b31fb872
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 58 --------------
+Correct categories:
+Row: 3
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/CGAL/cgal/commit/8855eb54c305ffeaec32cb6bc49bfb0a2e465cc2
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 60 --------------
+Correct categories:
+Row: 63
+Category: 2) Missing parallelism
+Sub-Category: 2.2) GPU parallelism
+Link: https://github.com/hypre-space/hypre/commit/a05d1942c9a1db25c6fa4c0c290fa312dc451a84
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 61 --------------
+Correct categories:
+Row: 148
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/GlobalArrays/ga/commit/e9c1456af12cd64a91c19dd57c52f96bf5573ad6
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 62 --------------
+Correct categories:
+Row: 14
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/lattice/quda/commit/b7857af47ff2e8e8162a250a4adefba55680b1c9
+-------------------------------
+Reponse from GPT:
+1) Inefficient coding for target micro-architecture
+-------------- IDX 69 --------------
+Correct categories:
+Row: 1
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/CGAL/cgal/commit/b0379f54bdff8236dee3a429b235167700ba23c0
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm/data-structure and their implementation
+-------------- IDX 71 --------------
+Correct categories:
+Row: 77
+Category: 3) Parallelization overhead/inefficiency
+Sub-Category: 3.2) Inefficeint thread mapping / inefficient block size / Load imbalance
+Link: https://github.com/kokkos/kokkos/commit/501f05661d1430a6e5ec19c0cbc7977a608d5dce
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 72 --------------
+Correct categories:
+Row: 178
+Category: 7) Inefficient memory management
+Sub-Category: 7.5) Insufficient memory
+Link: https://github.com/GlobalArrays/ga/commit/6b869d9ece536a375b5a79267bf3ca397de1b75d
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 76 --------------
+Correct categories:
+Row: 110
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/mfem/mfem/commit/2c9ee23a19c62b98da270a05dc868c17f070a788
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 78 --------------
+Correct categories:
+Row: 122
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/TileDB-Inc/TileDB/commit/0a4d55b5dd4347f2a4d4fbfab866e3dbdbdb00f2
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 79 --------------
+Correct categories:
+Row: 23
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/gromacs/gromacs/commit/8aa14d11ff775055794360a655fe800deea298a8
+-------------------------------
+Reponse from GPT:
+1) Inefficient coding for target micro-architecture
+-------------- IDX 80 --------------
+Correct categories:
+Row: 118
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/arrayfire/arrayfire/commit/dca852e2d53a2b606b7aa4cf5990ab99a9b3b67e
+-------------------------------
+Reponse from GPT:
+Inefficient memory management (7)
+-------------- IDX 81 --------------
+Correct categories:
+Row: 157
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.5) Inefficient data-structure library
+Link: https://github.com/arrayfire/arrayfire/commit/ee30e2729744afb157276107e1f74b4085b38e72
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 82 --------------
+Correct categories:
+Row: 52
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.2) Micro-architectural inefficiency
+Link: https://github.com/xianyi/OpenBLAS/commit/2dfb804cb943ac12035fe51859d109daca76b4f4
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 83 --------------
+Correct categories:
+Row: 180
+Category: 8) I/O inefficiency
+No subcategory
+Link: https://github.com/TileDB-Inc/TileDB/commit/ac2474656d31588d52ecec16a0c06bf77ef3e11e
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 95 --------------
+Correct categories:
+Row: 134
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/xianyi/OpenBLAS/commit/89fe17f20e7d1d10a7ec3315bf9b1816a3d47ce9
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 96 --------------
+Correct categories:
+Row: 137
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/lattice/quda/commit/955ea6cae8e358b942183ca30d44d1f3ca3d7296
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 101 --------------
+Correct categories:
+Row: 132
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/kokkos/kokkos/commit/0b636c910085f4b8414e06321c0cc276d29fa654
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 102 --------------
+Correct categories:
+Row: 86
+Category: 4) Inefficient Concurrency control and synchronization
+Sub-Category: 4.1) Unncessary locks
+Link: https://github.com/CGAL/cgal/commit/f8449dcec4a48873c814300b1012b3ba37de5ef7
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 106 --------------
+Correct categories:
+Row: 25
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/arrayfire/arrayfire/commit/46c66b5658beb84f4897581b16ae235f173ad97c
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 107 --------------
+Correct categories:
+Row: 108
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/CGAL/cgal/commit/e9cc8bcd5e71ca0b9b7b5888b7d400f9e24417d4
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 108 --------------
+Correct categories:
+Row: 124
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/gromacs/gromacs/commit/a711d4142629a31d92f7bbce8b8a51888f52e88f
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 110 --------------
+Correct categories:
+Row: 136
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/arrayfire/arrayfire/commit/d0d87ab2525af162de48764a0e4634110ab7d00f
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 111 --------------
+Correct categories:
+Row: 95
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.1) Unnecessary operation/traversal/function call
+Link: https://github.com/gromacs/gromacs/commit/7b4d632dd09d0714f65ec48d7380084d65907c4b
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 113 --------------
+Correct categories:
+Row: 131
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/openmm/openmm/commit/0e5d3fb1f02cad944327d4d921dd5c8fbf310ba2
+-------------------------------
+Reponse from GPT:
+Inefficient algorithm /data-structure and their implementation (6)
+-------------- IDX 115 --------------
+Correct categories:
+Row: 2
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/mlpack/mlpack/commit/723dea88435686b72359793ace767d0b409635af
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 119 --------------
+Correct categories:
+Row: 62
+Category: 2) Missing parallelism
+Sub-Category: 2.1) Vector/SIMD parallelism
+Link: https://github.com/lattice/quda/commit/5f028db11bc5111032dc9ab107dc36b681728f60
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 121 --------------
+Correct categories:
+Row: 103
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.1) Unnecessary operation/traversal/function call
+Link: https://github.com/lammps/lammps/commit/c3aa705d0409ddf9457cd1ba86e43ef10fc42d6e
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 125 --------------
+Correct categories:
+Row: 47
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.2) Micro-architectural inefficiency
+Link: https://github.com/gromacs/gromacs/commit/570db57b3ce38bd13c1ed3d13d1a34264f42e590
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 128 --------------
+Correct categories:
+Row: 135
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/xianyi/OpenBLAS/commit/c43331ad0aeaefe4b4d90aab06c93655c851feab
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 129 --------------
+Correct categories:
+Row: 0
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/CGAL/cgal/commit/28a9cb150ae9b11f9bb37d972be990d87b05cbcf
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 133 --------------
+Correct categories:
+Row: 112
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/mlpack/mlpack/commit/18f4b5ce035f0f4cd37bbe4436795d93b31fb872
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 134 --------------
+Correct categories:
+Row: 161
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.5) Inefficient data-structure library
+Link: https://github.com/TileDB-Inc/TileDB/commit/d51b082681569c75b2ccc2d3d2aea69548536f6c
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 135 --------------
+Correct categories:
+Row: 159
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.5) Inefficient data-structure library
+Link: https://github.com/precice/precice/commit/d08d467776f5242a6ec5d59cbdb697a3b1351f4f
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 136 --------------
+Correct categories:
+Row: 82
+Category: 3) Parallelization overhead/inefficiency
+Sub-Category: 3.3) Under-parallelization
+Link: https://github.com/arrayfire/arrayfire/commit/565caf5df8c6941410ad025bf88ad9c230b4b06c
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 137 --------------
+Correct categories:
+Row: 12
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/xianyi/OpenBLAS/commit/a87736346fd3988618c0d8895827566fce5a5487
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 138 --------------
+Correct categories:
+Row: 33
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/xianyi/OpenBLAS/commit/9fe3049de67495e1ca916141624c985a80f3d6cb
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 145 --------------
+Correct categories:
+Row: 120
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/hypre-space/hypre/commit/d1fff3e84d5f6a74e601bcc89c9dcc49c6235213
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 148 --------------
+Correct categories:
+Row: 121
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/gromacs/gromacs/commit/f7c18fba349729f99e30f22567679c541a61c1df
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 150 --------------
+Correct categories:
+Row: 54
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.2) Micro-architectural inefficiency
+Link: https://github.com/xianyi/OpenBLAS/commit/2379abaa5e6d559d58735f43e10d68c192724ea2
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 158 --------------
+Correct categories:
+Row: 147
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/CGAL/cgal/commit/54d8839ac9f5cc60c630fe13db8daab236cbfb3f
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 160 --------------
+Correct categories:
+Row: 186
+Category: 10) Inefficiency due to new compiler version 
+No subcategory
+Link: nan
+-------------------------------
+Reponse from GPT:
+Category 2: Missing parallelism.
+-------------- IDX 164 --------------
+Correct categories:
+Row: 45
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.2) Micro-architectural inefficiency
+Link: https://github.com/lattice/quda/commit/c3d7cba1d197a8c153ac639f41f98a4c76a0fd89
+-------------------------------
+Reponse from GPT:
+No performance related bugs found in the given code.
+-------------- IDX 166 --------------
+Correct categories:
+Row: 155
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.5) Inefficient data-structure library
+Link: https://github.com/CGAL/cgal/commit/743335d56eab5fc1f823d21921fefe6ea7d28ab3
+-------------------------------
+Reponse from GPT:
+No performance related bugs found in the given code.
+-------------- IDX 168 --------------
+Correct categories:
+Row: 16
+Category: 1) Inefficient coding for target micro-architecure
+Sub-Category: 1.1) Memory/Data locality
+Link: https://github.com/gromacs/gromacs/commit/85c36b9a1ca9c62702da2a0d6f97853c9f1d889c
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 169 --------------
+Correct categories:
+Row: 153
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.4) Frequent  function call
+Link: https://github.com/GOMC-WSU/GOMC/commit/b5d7ebd72508105b9475acc0939f4df00bb92041
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 171 --------------
+Correct categories:
+Row: 107
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/CGAL/cgal/commit/351249b03c662c4aa53b289f9ceb61c0a8067926
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 174 --------------
+Correct categories:
+Row: 170
+Category: 7) Inefficient memory management
+Sub-Category: 7.1) memory leak
+Link: https://github.com/arrayfire/arrayfire/commit/d3bb2023bae565d8f76fa21a515c755f020c559b
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism
+-------------- IDX 177 --------------
+Correct categories:
+Row: 113
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.2) Redundant operation
+Link: https://github.com/xianyi/OpenBLAS/commit/66316b9f4c8c7c48eed8b29e86f64581c02d45b0
+-------------------------------
+Reponse from GPT:
+No performance related bugs found in this code.
+-------------- IDX 180 --------------
+Correct categories:
+Row: 173
+Category: 7) Inefficient memory management
+Sub-Category: 7.2) repreated memory allocation
+Link: https://github.com/xianyi/OpenBLAS/commit/d744c9590ae18706b40e151a9adf2070639909fb
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 183 --------------
+Correct categories:
+Row: 93
+Category: 5) Unnecessary process communiction
+Sub-Category: 4.4) Unnecessary synchronization
+Link: https://github.com/libMesh/libmesh/commit/24a22afdcac7061f41f7bf89c5a88cdf014fb4f1
+-------------------------------
+Reponse from GPT:
+6) Inefficient algorithm /data-structure and their implementation
+-------------- IDX 186 --------------
+Correct categories:
+Row: 149
+Category: 6) Inefficient algorithm /data-structure and their implementation
+Sub-Category: 6.3) Expensive operation
+Link: https://github.com/mlpack/mlpack/commit/83207c4439ce3072e9b590cd6d2feeafdd25f2bd
+-------------------------------
+Reponse from GPT:
+2) Missing parallelism

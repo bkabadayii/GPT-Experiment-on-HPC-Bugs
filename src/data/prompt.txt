@@ -1,211 +1,395 @@
 Following code has some performance related bugs.
-Please identify the performance bugs category and subcategory from the given list (pick only one):
+Please identify the performance bugs category from the given list and explain it.
 
 LIST:
 1) Inefficient coding for target micro-architecture
-   1.1) Memory/Data locality
-   1.2) Micro-architectural inefficiency
 2)	Missing parallelism
-   2.1) Vector/SIMD parallelism
-   2.2) GPU parallelism
-   2.3) Instruction level parallelism
-   2.4) Task parallelism
 3)	Parallelization overhead/inefficiency
-   3.1) Small parallel region
-   3.2) Inefficient thread mapping / inefficient block size / Load imbalance
-   3.3) Under-parallelization
-   3.4) Over-Parallelization
 4)	Inefficient Concurrency control and synchronization
-   4.1) Unnecessary locks
-   4.2) Unnecessary strong memory consistency
-   4.3) Lock management overhead
-   4.4) Unnecessary synchronization
-5)	Unnecessary process communication
+5)	Unnecessary process communiction
 6)	Inefficient algorithm /data-structure and their implementation
-   6.1) Unnecessary operation/traversal/function call
-   6.2) Redundant operation
-   6.3) Expensive operation
-   6.4) Frequent function call
-   6.5) Inefficient data-structure library
-   6.6) Usage of improper data type
 7)	Inefficient memory management
-   7.1) Memory leak
-   7.2) Repeated memory allocation
-   7.3) Redundant memory allocation
-   7.4) Slower memory allocation library call
-   7.5) Insufficient memory
-   7.6) unnecessary data copy
 8)	I/O inefficiency
-   8.1) Sequential I/O operation
-   8.2) Over parallelization
-9)	Unintentional Programming logic error
+9) Unintentional Programming logic error
 10) Inefficiency due to new compiler version
 
-FILE:
-/* -------------------------------------------------------------------------- *
- *                                   OpenMM                                   *
- * -------------------------------------------------------------------------- *
- * This is part of the OpenMM molecular simulation toolkit originating from   *
- * Simbios, the NIH National Center for Physics-Based Simulation of           *
- * Biological Structures at Stanford, funded under the NIH Roadmap for        *
- * Medical Research, grant U54 GM072970. See https://simtk.org.               *
- *                                                                            *
- * Portions copyright (c) 2010-2013 Stanford University and the Authors.      *
- * Authors: Peter Eastman                                                     *
- * Contributors:                                                              *
- *                                                                            *
- * This program is free software: you can redistribute it and/or modify       *
- * it under the terms of the GNU Lesser General Public License as published   *
- * by the Free Software Foundation, either version 3 of the License, or       *
- * (at your option) any later version.                                        *
- *                                                                            *
- * This program is distributed in the hope that it will be useful,            *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of             *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
- * GNU Lesser General Public License for more details.                        *
- *                                                                            *
- * You should have received a copy of the GNU Lesser General Public License   *
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *
- * -------------------------------------------------------------------------- */
+CODE:
+#pragma once
 
-#include "OpenCLSort.h"
-#include "OpenCLKernelSources.h"
-#include <map>
+#include <color_spinor_field.h>
+#include <tune_quda.h>
+#include <dslash_quda.h>
+#include <dslash_helper.cuh>
+#include <jitify_helper.cuh>
 
-using namespace OpenMM;
-using namespace std;
+namespace quda {
 
-OpenCLSort::OpenCLSort(OpenCLContext& context, SortTrait* trait, unsigned int length) : context(context), trait(trait),
-            dataRange(NULL), bucketOfElement(NULL), offsetInBucket(NULL), bucketOffset(NULL), buckets(NULL), dataLength(length) {
-    // Create kernels.
+  template <typename Float>
+  class Dslash : public TunableVectorYZ {
 
-    std::map<std::string, std::string> replacements;
-    replacements["DATA_TYPE"] = trait->getDataType();
-    replacements["KEY_TYPE"] =  trait->getKeyType();
-    replacements["SORT_KEY"] = trait->getSortKey();
-    replacements["MIN_KEY"] = trait->getMinKey();
-    replacements["MAX_KEY"] = trait->getMaxKey();
-    replacements["MAX_VALUE"] = trait->getMaxValue();
-    replacements["VALUE_IS_INT2"] = (trait->getDataType() == std::string("int2") ? "1" : "0");
-    cl::Program program = context.createProgram(context.replaceStrings(OpenCLKernelSources::sort, replacements));
-    shortListKernel = cl::Kernel(program, "sortShortList");
-    computeRangeKernel = cl::Kernel(program, "computeRange");
-    assignElementsKernel = cl::Kernel(program, "assignElementsToBuckets");
-    computeBucketPositionsKernel = cl::Kernel(program, "computeBucketPositions");
-    copyToBucketsKernel = cl::Kernel(program, "copyDataToBuckets");
-    sortBucketsKernel = cl::Kernel(program, "sortBuckets");
+  protected:
 
-    // Work out the work group sizes for various kernels.
+    DslashArg<Float> &arg;
+    const ColorSpinorField &out;
+    const ColorSpinorField &in;
 
-    unsigned int maxGroupSize = std::min(256, (int) context.getDevice().getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
-    int maxSharedMem = context.getDevice().getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
-    unsigned int maxLocalBuffer = (unsigned int) ((maxSharedMem/trait->getDataSize())/2);
-    unsigned int maxRangeSize = std::min(maxGroupSize, (unsigned int) computeRangeKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(context.getDevice()));
-    unsigned int maxPositionsSize = std::min(maxGroupSize, (unsigned int) computeBucketPositionsKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(context.getDevice()));
-    unsigned int maxShortListSize = shortListKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(context.getDevice());
-    isShortList = (length <= maxLocalBuffer && length < maxShortListSize);
-    for (rangeKernelSize = 1; rangeKernelSize*2 <= maxRangeSize; rangeKernelSize *= 2)
-        ;
-    positionsKernelSize = std::min(rangeKernelSize, maxPositionsSize);
-    sortKernelSize = (isShortList ? rangeKernelSize : rangeKernelSize/2);
-    if (rangeKernelSize > length)
-        rangeKernelSize = length;
-    if (sortKernelSize > maxLocalBuffer)
-        sortKernelSize = maxLocalBuffer;
-    unsigned int targetBucketSize = sortKernelSize/2;
-    unsigned int numBuckets = length/targetBucketSize;
-    if (numBuckets < 1)
-        numBuckets = 1;
-    if (positionsKernelSize > numBuckets)
-        positionsKernelSize = numBuckets;
+    const int nDimComms;
 
-    // Create workspace arrays.
+    char aux_base[TuneKey::aux_n];
+    char aux[8][TuneKey::aux_n];
 
-    if (!isShortList) {
-        dataRange = new OpenCLArray(context, 2, trait->getKeySize(), "sortDataRange");
-        bucketOffset = OpenCLArray::create<cl_uint>(context, numBuckets, "bucketOffset");
-        bucketOfElement = OpenCLArray::create<cl_uint>(context, length, "bucketOfElement");
-        offsetInBucket = OpenCLArray::create<cl_uint>(context, length, "offsetInBucket");
-        buckets = new OpenCLArray(context, length, trait->getDataSize(), "buckets");
+#ifdef JITIFY
+    // local copy of the static program pointer - this is a work
+    // around for issues with the static program pointer when
+    // HOSTDEBUG compilation is targeted (more precisely -fno-inline)
+    jitify::Program *program_;
+#endif
+
+    /**
+       @brief Set the base strings used by the different dslash kernel
+       types for autotuning.
+    */
+    inline void fillAuxBase() {
+      char comm[5];
+      comm[0] = (arg.commDim[0] ? '1' : '0');
+      comm[1] = (arg.commDim[1] ? '1' : '0');
+      comm[2] = (arg.commDim[2] ? '1' : '0');
+      comm[3] = (arg.commDim[3] ? '1' : '0');
+      comm[4] = '\0';
+      strcpy(aux_base,",commDim=");
+      strcat(aux_base,comm);
+
+      if (arg.xpay) strcat(aux_base,",xpay");
+      if (arg.dagger) strcat(aux_base,",dagger");
     }
-}
 
-OpenCLSort::~OpenCLSort() {
-    delete trait;
-    if (dataRange != NULL)
-        delete dataRange;
-    if (bucketOfElement != NULL)
-        delete bucketOfElement;
-    if (offsetInBucket != NULL)
-        delete offsetInBucket;
-    if (bucketOffset != NULL)
-        delete bucketOffset;
-    if (buckets != NULL)
-        delete buckets;
-}
-
-void OpenCLSort::sort(OpenCLArray& data) {
-    if (data.getSize() != dataLength || data.getElementSize() != trait->getDataSize())
-        throw OpenMMException("OpenCLSort called with different data size");
-    if (data.getSize() == 0)
-        return;
-    if (isShortList) {
-        // We can use a simpler sort kernel that does the entire operation at once in local memory.
-        
-        shortListKernel.setArg<cl::Buffer>(0, data.getDeviceBuffer());
-        shortListKernel.setArg<cl_uint>(1, dataLength);
-        shortListKernel.setArg(2, dataLength*trait->getDataSize(), NULL);
-        context.executeKernel(shortListKernel, sortKernelSize, sortKernelSize);
+    /**
+       @brief Specialize the auxiliary strings for each kernel type
+       @param[in] kernel_type The kernel_type we are generating the string got
+       @param[in] kernel_str String corresponding to the kernel type
+    */
+    inline void fillAux(KernelType kernel_type, const char *kernel_str) {
+      strcpy(aux[kernel_type],kernel_str);
+      if (kernel_type == INTERIOR_KERNEL) strcat(aux[kernel_type],comm_dim_partitioned_string());
+      strcat(aux[kernel_type],aux_base);
     }
-    else {
-        // Compute the range of data values.
 
-        unsigned int numBuckets = bucketOffset->getSize();
-        computeRangeKernel.setArg<cl::Buffer>(0, data.getDeviceBuffer());
-        computeRangeKernel.setArg<cl_uint>(1, data.getSize());
-        computeRangeKernel.setArg<cl::Buffer>(2, dataRange->getDeviceBuffer());
-        computeRangeKernel.setArg(3, rangeKernelSize*trait->getKeySize(), NULL);
-        computeRangeKernel.setArg<cl_int>(4, numBuckets);
-        computeRangeKernel.setArg<cl::Buffer>(5, bucketOffset->getDeviceBuffer());
-        context.executeKernel(computeRangeKernel, rangeKernelSize, rangeKernelSize);
+    bool tuneGridDim() const { return false; }
+    unsigned int minThreads() const { return arg.threads; }
 
-        // Assign array elements to buckets.
+    template <typename Arg>
+    inline void setParam(Arg &arg) {
+      arg.t_proj_scale = getKernelPackT() ? 1.0 : 2.0;
 
-        assignElementsKernel.setArg<cl::Buffer>(0, data.getDeviceBuffer());
-        assignElementsKernel.setArg<cl_int>(1, data.getSize());
-        assignElementsKernel.setArg<cl_int>(2, numBuckets);
-        assignElementsKernel.setArg<cl::Buffer>(3, dataRange->getDeviceBuffer());
-        assignElementsKernel.setArg<cl::Buffer>(4, bucketOffset->getDeviceBuffer());
-        assignElementsKernel.setArg<cl::Buffer>(5, bucketOfElement->getDeviceBuffer());
-        assignElementsKernel.setArg<cl::Buffer>(6, offsetInBucket->getDeviceBuffer());
-        context.executeKernel(assignElementsKernel, data.getSize());
+      // Need to reset ghost pointers prior to every call since the
+      // ghost buffer may have been changed during policy tuning.
+      // Also, the accessor constructor calls Ghost(), which uses
+      // ghost_buf, but this is only presently set with the
+      // synchronous exchangeGhost.
+      static void *ghost[8]; // needs to be persistent across interior and exterior calls
+      for (int dim=0; dim<4; dim++) {
 
-        // Compute the position of each bucket.
+        for (int dir=0; dir<2; dir++) {
+          // if doing interior kernel, then this is the initial call,
+          // so we set all ghost pointers else if doing exterior
+          // kernel, then we only have to update the non-p2p ghosts,
+          // since these may have been assigned to zero-copy memory
+          if (!comm_peer2peer_enabled(dir, dim) || arg.kernel_type == INTERIOR_KERNEL) {
+            ghost[2*dim+dir] = (Float*)((char*)in.Ghost2() + in.GhostOffset(dim,dir)*in.GhostPrecision());
+          }
+        }
+      }
 
-        computeBucketPositionsKernel.setArg<cl_int>(0, numBuckets);
-        computeBucketPositionsKernel.setArg<cl::Buffer>(1, bucketOffset->getDeviceBuffer());
-        computeBucketPositionsKernel.setArg(2, positionsKernelSize*sizeof(cl_int), NULL);
-        context.executeKernel(computeBucketPositionsKernel, positionsKernelSize, positionsKernelSize);
-
-        // Copy the data into the buckets.
-
-        copyToBucketsKernel.setArg<cl::Buffer>(0, data.getDeviceBuffer());
-        copyToBucketsKernel.setArg<cl::Buffer>(1, buckets->getDeviceBuffer());
-        copyToBucketsKernel.setArg<cl_int>(2, data.getSize());
-        copyToBucketsKernel.setArg<cl::Buffer>(3, bucketOffset->getDeviceBuffer());
-        copyToBucketsKernel.setArg<cl::Buffer>(4, bucketOfElement->getDeviceBuffer());
-        copyToBucketsKernel.setArg<cl::Buffer>(5, offsetInBucket->getDeviceBuffer());
-        context.executeKernel(copyToBucketsKernel, data.getSize());
-
-        // Sort each bucket.
-
-        sortBucketsKernel.setArg<cl::Buffer>(0, data.getDeviceBuffer());
-        sortBucketsKernel.setArg<cl::Buffer>(1, buckets->getDeviceBuffer());
-        sortBucketsKernel.setArg<cl_int>(2, numBuckets);
-        sortBucketsKernel.setArg<cl::Buffer>(3, bucketOffset->getDeviceBuffer());
-        sortBucketsKernel.setArg(4, sortKernelSize*trait->getDataSize(), NULL);
-        context.executeKernel(sortBucketsKernel, ((data.getSize()+sortKernelSize-1)/sortKernelSize)*sortKernelSize, sortKernelSize);
+      arg.in.resetGhost(in, ghost);
     }
-}
+
+    virtual int tuningIter() const { return 10; }
+
+  public:
+
+    template <typename T, typename Arg>
+    inline void launch(T *f, const TuneParam &tp, Arg &arg, const cudaStream_t &stream) {
+      if (deviceProp.major >= 7) { // should test whether this is always optimal on Volta
+	this->setMaxDynamicSharedBytesPerBlock(f);
+      }
+      void *args[] = { &arg };
+      qudaLaunchKernel((const void *)f, tp.grid, tp.block, args, tp.shared_bytes, stream);
+    }
+
+    /**
+       @brief This instantiate function is used to instantiate the
+       the KernelType template required for the multi-GPU dslash kernels.
+       @param[in] tp The tuning parameters to use for this kernel
+       @param[in,out] arg The argument struct for the kernel
+       @param[in] stream The cudaStream_t where the kernel will run
+     */
+    template < template <typename,int,int,int,bool,bool,KernelType,typename> class Launch,
+               int nDim, int nColor, int nParity, bool dagger, bool xpay, typename Arg>
+    inline void instantiate(TuneParam &tp, Arg &arg, const cudaStream_t &stream) {
+
+      if (in.Location() == QUDA_CPU_FIELD_LOCATION) {
+        errorQuda("Not implemented");
+      } else {
+        switch(arg.kernel_type) {
+        case INTERIOR_KERNEL:
+          Launch<Float,nDim,nColor,nParity,dagger,xpay,INTERIOR_KERNEL,Arg>::launch(*this, tp, arg, stream); break;
+#ifdef MULTI_GPU
+        case EXTERIOR_KERNEL_X:
+          Launch<Float,nDim,nColor,nParity,dagger,xpay,EXTERIOR_KERNEL_X,Arg>::launch(*this, tp, arg, stream); break;
+        case EXTERIOR_KERNEL_Y:
+          Launch<Float,nDim,nColor,nParity,dagger,xpay,EXTERIOR_KERNEL_Y,Arg>::launch(*this, tp, arg, stream); break;
+        case EXTERIOR_KERNEL_Z:
+          Launch<Float,nDim,nColor,nParity,dagger,xpay,EXTERIOR_KERNEL_Z,Arg>::launch(*this, tp, arg, stream); break;
+        case EXTERIOR_KERNEL_T:
+          Launch<Float,nDim,nColor,nParity,dagger,xpay,EXTERIOR_KERNEL_T,Arg>::launch(*this, tp, arg, stream); break;
+        case EXTERIOR_KERNEL_ALL:
+          Launch<Float,nDim,nColor,nParity,dagger,xpay,EXTERIOR_KERNEL_ALL,Arg>::launch(*this, tp, arg, stream); break;
+        default: errorQuda("Unexpected kernel type %d", arg.kernel_type);
+#else
+        default: errorQuda("Unexpected kernel type %d for single-GPU build", arg.kernel_type);
+#endif
+        }
+      }
+    }
+
+    /**
+       @brief This instantiate function is used to instantiate the
+       the dagger template
+       @param[in] tp The tuning parameters to use for this kernel
+       @param[in,out] arg The argument struct for the kernel
+       @param[in] stream The cudaStream_t where the kernel will run
+     */
+    template < template <typename,int,int,int,bool,bool,KernelType,typename> class Launch,
+               int nDim, int nColor, int nParity, bool xpay, typename Arg>
+    inline void instantiate(TuneParam &tp, Arg &arg, const cudaStream_t &stream)
+    {
+#ifdef JITIFY
+      using namespace jitify::reflection;
+      const auto kernel = Launch<void,0,0,0,false,false,INTERIOR_KERNEL,Arg>::kernel;
+      Tunable::jitify_error = program_->kernel(kernel)
+        .instantiate(Type<Float>(),nDim,nColor,nParity,arg.dagger,xpay,arg.kernel_type,Type<Arg>())
+        .configure(tp.grid,tp.block,tp.shared_bytes,stream)
+        .launch(arg);
+#else
+      if (arg.dagger) instantiate<Launch,nDim,nColor,nParity, true,xpay>(tp, arg, stream);
+      else            instantiate<Launch,nDim,nColor,nParity,false,xpay>(tp, arg, stream);
+#endif
+    }
+
+    /**
+       @brief This instantiate function is used to instantiate the
+       the nParity template
+       @param[in] tp The tuning parameters to use for this kernel
+       @param[in,out] arg The argument struct for the kernel
+       @param[in] stream The cudaStream_t where the kernel will run
+     */
+    template < template <typename,int,int,int,bool,bool,KernelType,typename> class Launch,
+               int nDim, int nColor, bool xpay, typename Arg>
+    inline void instantiate(TuneParam &tp, Arg &arg, const cudaStream_t &stream)
+    {
+#ifdef JITIFY
+      using namespace jitify::reflection;
+      const auto kernel = Launch<void,0,0,0,false,false,INTERIOR_KERNEL,Arg>::kernel;
+      Tunable::jitify_error = program_->kernel(kernel)
+        .instantiate(Type<Float>(),nDim,nColor,arg.nParity,arg.dagger,xpay,arg.kernel_type,Type<Arg>())
+        .configure(tp.grid,tp.block,tp.shared_bytes,stream)
+        .launch(arg);
+#else
+      switch (arg.nParity) {
+      case 1: instantiate<Launch,nDim,nColor,1,xpay>(tp, arg, stream); break;
+      case 2: instantiate<Launch,nDim,nColor,2,xpay>(tp, arg, stream); break;
+      default: errorQuda("nParity = %d undefined\n", arg.nParity);
+      }
+#endif
+    }
+
+    /**
+       @brief This instantiate function is used to instantiate the
+       the xpay template
+       @param[in] tp The tuning parameters to use for this kernel
+       @param[in,out] arg The argument struct for the kernel
+       @param[in] stream The cudaStream_t where the kernel will run
+     */
+    template < template <typename,int,int,int,bool,bool,KernelType,typename> class Launch,
+      int nDim, int nColor, typename Arg>
+    inline void instantiate(TuneParam &tp, Arg &arg, const cudaStream_t &stream)
+    {
+#ifdef JITIFY
+      using namespace jitify::reflection;
+      const auto kernel = Launch<void,0,0,0,false,false,INTERIOR_KERNEL,Arg>::kernel;
+      Tunable::jitify_error = program_->kernel(kernel)
+        .instantiate(Type<Float>(),nDim,nColor,arg.nParity,arg.dagger,arg.xpay,arg.kernel_type,Type<Arg>())
+        .configure(tp.grid,tp.block,tp.shared_bytes,stream)
+        .launch(arg);
+#else
+      if (arg.xpay) instantiate<Launch,nDim,nColor, true>(tp, arg, stream);
+      else          instantiate<Launch,nDim,nColor,false>(tp, arg, stream);
+#endif
+    }
+
+    DslashArg<Float> &dslashParam; // temporary addition for policy compatibility
+
+    Dslash(DslashArg<Float> &arg, const ColorSpinorField &out, const ColorSpinorField &in, const char *src)
+      : TunableVectorYZ(1,arg.nParity), arg(arg), out(out), in(in), nDimComms(4), dslashParam(arg)
+    {
+      // this sets the communications pattern for the packing kernel
+      setPackComms(arg.commDim);
+
+      //strcpy(aux, in.AuxString());
+      fillAuxBase();
+#ifdef MULTI_GPU
+      fillAux(INTERIOR_KERNEL, "policy_kernel=interior");
+      fillAux(EXTERIOR_KERNEL_ALL, "policy_kernel=exterior_all");
+      fillAux(EXTERIOR_KERNEL_X, "policy_kernel=exterior_x");
+      fillAux(EXTERIOR_KERNEL_Y, "policy_kernel=exterior_y");
+      fillAux(EXTERIOR_KERNEL_Z, "policy_kernel=exterior_z");
+      fillAux(EXTERIOR_KERNEL_T, "policy_kernel=exterior_t");
+#else
+      fillAux(INTERIOR_KERNEL, "policy_kernel=single-GPU");
+#endif // MULTI_GPU
+      fillAux(KERNEL_POLICY, "policy");
+
+#ifdef JITIFY
+      create_jitify_program(src);
+      program_ = program;
+#endif
+    }
+
+    int Nface() const { return 2*arg.nFace; } // factor of 2 is for forwards/backwards (convention used in dslash policy)
+    int Dagger() const { return arg.dagger; }
+
+    const char* getAux(KernelType type) const {
+      return aux[type];
+    }
+
+    void setAux(KernelType type, const char *aux_) {
+      strcpy(aux[type], aux_);
+    }
+
+    void augmentAux(KernelType type, const char *extra) {
+      strcat(aux[type], extra);
+    }
+
+    /**
+       @brief Save the output field since the output field is both
+       read from and written to in the exterior kernels
+     */
+    virtual void preTune() { if (arg.kernel_type != INTERIOR_KERNEL && arg.kernel_type != KERNEL_POLICY) out.backup(); }
+
+    /**
+       @brief Restore the output field if doing exterior kernel
+     */
+    virtual void postTune() { if (arg.kernel_type != INTERIOR_KERNEL && arg.kernel_type != KERNEL_POLICY) out.restore(); }
+
+    /*
+      per direction / dimension flops
+      spin project flops = Nc * Ns
+      SU(3) matrix-vector flops = (8 Nc - 2) * Nc
+      spin reconstruction flops = 2 * Nc * Ns (just an accumulation to all components)
+      xpay = 2 * 2 * Nc * Ns
+
+      So for the full dslash we have, where for the final spin
+      reconstruct we have -1 since the first direction does not
+      require any accumulation.
+
+      flops = (2 * Nd * Nc * Ns)  +  (2 * Nd * (Ns/2) * (8*Nc-2) * Nc)  +  ((2 * Nd - 1) * 2 * Nc * Ns)
+      flops_xpay = flops + 2 * 2 * Nc * Ns
+
+      For Wilson this should give 1344 for Nc=3,Ns=2 and 1368 for the xpay equivalent
+    */
+    virtual long long flops() const
+    {
+      int mv_flops = (8 * in.Ncolor() - 2) * in.Ncolor(); // SU(3) matrix-vector flops
+      int num_mv_multiply = in.Nspin() == 4 ? 2 : 1;
+      int ghost_flops = (num_mv_multiply * mv_flops + 2*in.Ncolor()*in.Nspin());
+      int xpay_flops = 2 * 2 * in.Ncolor() * in.Nspin(); // multiply and add per real component
+      int num_dir = 2 * 4; // set to 4-d since we take care of 5-d fermions in derived classes where necessary
+
+      long long flops_ = 0;
+
+      // FIXME - should we count the xpay flops in the derived kernels
+      // since some kernels require the xpay in the exterior (preconditiond clover)
+
+      switch(arg.kernel_type) {
+      case EXTERIOR_KERNEL_X:
+      case EXTERIOR_KERNEL_Y:
+      case EXTERIOR_KERNEL_Z:
+      case EXTERIOR_KERNEL_T:
+        flops_ = (ghost_flops + (arg.xpay ? xpay_flops : xpay_flops/2)) * 2 * in.GhostFace()[arg.kernel_type];
+        break;
+      case EXTERIOR_KERNEL_ALL:
+        {
+          long long ghost_sites = 2 * (in.GhostFace()[0]+in.GhostFace()[1]+in.GhostFace()[2]+in.GhostFace()[3]);
+          flops_ = (ghost_flops + (arg.xpay ? xpay_flops : xpay_flops/2)) * ghost_sites;
+          break;
+        }
+      case INTERIOR_KERNEL:
+      case KERNEL_POLICY:
+        {
+          long long sites = in.Volume();
+          flops_ = (num_dir*(in.Nspin()/4)*in.Ncolor()*in.Nspin() +   // spin project (=0 for staggered)
+                    num_dir*num_mv_multiply*mv_flops +                // SU(3) matrix-vector multiplies
+                    ((num_dir-1)*2*in.Ncolor()*in.Nspin())) * sites;  // accumulation
+          if (arg.xpay) flops_ += xpay_flops * sites;
+
+          if (arg.kernel_type == KERNEL_POLICY) break;
+          // now correct for flops done by exterior kernel
+          long long ghost_sites = 0;
+          for (int d=0; d<4; d++) if (arg.commDim[d]) ghost_sites += 2 * in.GhostFace()[d];
+          flops_ -= ghost_flops * ghost_sites;
+
+          break;
+        }
+      }
+
+      return flops_;
+    }
+
+    virtual long long bytes() const
+    {
+      int gauge_bytes = arg.reconstruct * in.Precision();
+      bool isFixed = (in.Precision() == sizeof(short) || in.Precision() == sizeof(char)) ? true : false;
+      int spinor_bytes = 2 * in.Ncolor() * in.Nspin() * in.Precision() + (isFixed ? sizeof(float) : 0);
+      int proj_spinor_bytes = in.Nspin() == 4 ? spinor_bytes / 2 : spinor_bytes;
+      int ghost_bytes = (proj_spinor_bytes + gauge_bytes) + 2*spinor_bytes; // 2 since we have to load the partial
+      int num_dir = 2 * 4; // set to 4-d since we take care of 5-d fermions in derived classes where necessary
+
+      long long bytes_ = 0;
+
+      switch(arg.kernel_type) {
+      case EXTERIOR_KERNEL_X:
+      case EXTERIOR_KERNEL_Y:
+      case EXTERIOR_KERNEL_Z:
+      case EXTERIOR_KERNEL_T:
+        bytes_ = ghost_bytes * 2 * in.GhostFace()[arg.kernel_type];
+        break;
+      case EXTERIOR_KERNEL_ALL:
+        {
+          long long ghost_sites = 2 * (in.GhostFace()[0]+in.GhostFace()[1]+in.GhostFace()[2]+in.GhostFace()[3]);
+          bytes_ = ghost_bytes * ghost_sites;
+          break;
+        }
+      case INTERIOR_KERNEL:
+      case KERNEL_POLICY:
+        {
+          long long sites = in.Volume();
+          bytes_ = (num_dir*gauge_bytes + ((num_dir-2)*spinor_bytes + 2*proj_spinor_bytes) + spinor_bytes)*sites;
+          if (arg.xpay) bytes_ += spinor_bytes;
+
+          if (arg.kernel_type == KERNEL_POLICY) break;
+          // now correct for bytes done by exterior kernel
+          long long ghost_sites = 0;
+          for (int d=0; d<4; d++) if (arg.commDim[d]) ghost_sites += 2*in.GhostFace()[d];
+          bytes_ -= ghost_bytes * ghost_sites;
+
+          break;
+        }
+      }
+      return bytes_;
+    }
+
+  };
+
+} // namespace quda
 
 
