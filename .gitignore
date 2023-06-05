@@ -1,3 +1,6 @@
 .env
 RQ1.xlsx
 .DS_Store
+.vscode
+bugged_codes
+fixed_codes
