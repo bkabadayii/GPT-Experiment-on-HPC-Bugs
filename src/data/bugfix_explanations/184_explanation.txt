@@ -1,0 +1,6 @@
+The performance bug in the code is that the loop over `is` in the second half of the function is not properly aligned with the loop over `ls`. Specifically, the loop over `is` starts at index 0 and increments by `GEMM_P`, whereas the loop over `ls` decrements by `GEMM_Q`. This can cause the loop over `is` to access memory that has not been prefetched, leading to cache misses and reduced performance.
+
+To fix this bug, we can modify the loop over `is` to start at `ls - min_l` and decrement by `GEMM_P`, which ensures that it is properly aligned with the loop over `ls`.
+
+Here is the full fixed code:
+

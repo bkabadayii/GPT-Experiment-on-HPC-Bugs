@@ -1,0 +1,4 @@
+The performance bug in the code is that the `coeff` vector is being copied unnecessarily in the `CloverSigmaOprodArg` constructor. Instead of copying the vector, we can just pass a reference to it. This will save time and memory. 
+
+Here is the fixed code:
+

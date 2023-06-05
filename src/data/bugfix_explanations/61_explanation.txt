@@ -1,0 +1,37 @@
+The performance bug in this code is that it does not use vectorization, which can significantly improve the performance of the function. To fix this, we can use SIMD instructions to process multiple elements of the input array at once.
+
+Here is the fixed code:
+
+#include "common.h"
+#include <math.h>
+#include <immintrin.h> // include SIMD intrinsics
+
+FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x)
+{
+    BLASLONG i = 0;
+    FLOAT sumf = 0.0;
+
+    if (n <= 0 || inc_x <= 0) return(sumf);
+
+    n *= inc_x;
+
+    // use SIMD instructions to process multiple elements at once
+    __m256 sum = _mm256_setzero_ps();
+    for (; i < n - 7; i += 8) {
+        __m256 x_vec = _mm256_loadu_ps(&x[i]);
+        sum = _mm256_add_ps(sum, x_vec);
+    }
+
+    // add up remaining elements
+    for (; i < n; i += inc_x) {
+        sumf += x[i];
+    }
+
+    // add up the partial sums from the SIMD instructions
+    float partial_sums[8];
+    _mm256_storeu_ps(partial_sums, sum);
+    for (int j = 0; j < 8; j++) {
+        sumf += partial_sums[j];
+    }
+
+    return(sumf);

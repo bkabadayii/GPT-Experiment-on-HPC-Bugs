@@ -1,0 +1,4 @@
+The performance bug in the code is that the priority queue `pq` is being reserved with a size of `tree_.size() / 2`, which is too large. This causes unnecessary memory allocation and slows down the code. Instead, the priority queue should be initialized with an empty container and let it grow dynamically as needed.
+
+Here is the fixed code:
+

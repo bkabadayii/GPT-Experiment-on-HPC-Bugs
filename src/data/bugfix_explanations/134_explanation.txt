@@ -1,0 +1,4 @@
+The performance bug in the code is that the push_work() and pop_work() functions use atomic operations unnecessarily. Since these functions are only called by a single thread, there is no need for atomic operations. Removing the atomic operations will improve performance.
+
+Here is the full fixed code:
+

@@ -1,0 +1,4 @@
+The performance bug in the code is that the validation loop in `perform_validation` is not accumulating the errors correctly. The loop should be modified to accumulate the errors instead of overwriting them in each iteration.
+
+Here is the fixed code:
+

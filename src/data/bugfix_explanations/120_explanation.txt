@@ -1,0 +1,4 @@
+The performance bug in the code is caused by the use of the `clamp` function in the nested loops. The `clamp` function is called for every pixel in the image, which is very expensive. Instead, we can use simple `if` statements to check if the indices are within bounds. 
+
+Here is the fixed code:
+

@@ -1,0 +1,6 @@
+The performance bug in this code is that the CUDA compiler flag "--maxrregcount=80" is only being set for GPU architectures other than "sm_20". However, this flag should be set for all architectures to limit the maximum number of registers in BLAS routines and increase occupancy. 
+
+Here is the fixed code:
+
+
+<CODE>

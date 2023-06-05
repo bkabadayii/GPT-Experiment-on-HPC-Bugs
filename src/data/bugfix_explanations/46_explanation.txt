@@ -1,0 +1,2 @@
+The performance bug in this code is that the `union_with` function is not using `const` references for the input arguments, which can cause unnecessary copying of objects. To fix this, we can change the function signatures to take `const` references. Here is the fixed code:
+

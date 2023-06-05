@@ -1,0 +1,6 @@
+The performance bug in the code is that the function L_BFGS::GradientNormTooSmall() always returns false, which means that the optimization may continue indefinitely even if the gradient norm is very small. To fix this, we need to change the comparison in the function to use the member variable minGradientNorm instead of a hard-coded value of 1e-5.
+
+Here is the fixed code:
+
+
+<CODE>

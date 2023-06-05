@@ -1,0 +1,6 @@
+The performance bug in this code is in the `Pooling` function. Specifically, the nested loops that iterate over the output matrix are not ordered in the correct way. This causes the function to access the input matrix in a non-contiguous way, which can be very slow. To fix this, we need to swap the order of the loops so that the inner loop iterates over the columns of the output matrix, and the outer loop iterates over the rows. This ensures that the input matrix is accessed in a contiguous way.
+
+Here is the fixed code:
+
+
+<CODE>

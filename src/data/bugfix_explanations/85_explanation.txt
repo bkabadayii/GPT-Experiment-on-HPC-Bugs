@@ -1,0 +1,4 @@
+The performance bug in this code is that the buffer allocation and deallocation in the `goto_set_num_threads` function is not efficient. It allocates a buffer for each thread, even if the number of threads is not changed. Also, it does not reuse the existing buffer if the number of threads is reduced. To fix this, we can allocate the buffers only when the number of threads is increased and reuse the existing buffers when the number of threads is reduced.
+
+Here is the fixed code:
+

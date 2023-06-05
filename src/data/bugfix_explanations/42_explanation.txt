@@ -1,0 +1,98 @@
+The performance bug in the code is that the `clamp` function is being called inside the `index` function, which is being called repeatedly in the kernel. This is causing a significant slowdown in the kernel. To fix this, we can calculate the clamped indices outside the kernel and pass them as arguments to the kernel.
+
+Here is the fixed code:
+
+/*******************************************************
+ * Copyright (c) 2019, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
+#include <Param.hpp>
+#include <math.hpp>
+
+namespace cuda {
+
+__forceinline__ __device__
+int index(const int x, const int y, const int dim0,
+          const int dim1, const int stride0, const int stride1,
+          const int clamped_x, const int clamped_y) {
+    return clamped_x * stride0 + clamped_y * stride1;
+}
+
+__device__
+float quadratic(const float value) { return 1.0 / (1.0 + value); }
+
+__device__
+float computeGradientBasedUpdate(const float mct, const float C,
+                                 const float S, const float N,
+                                 const float W, const float E,
+                                 const float SE, const float SW,
+                                 const float NE, const float NW,
+                                 const af::fluxFunction fftype,
+                                 const int clamped_x, const int clamped_y,
+                                 const int stride0, const int stride1) {
+    float delta = 0;
+
+    float dx, dy, df, db, cx, cxd;
+
+    // centralized derivatives
+    dx = (E - W) * 0.5f;
+    dy = (S - N) * 0.5f;
+
+    // half-d's and conductance along first dimension
+    df = E - C;
+    db = C - W;
+
+    if (fftype == AF_FLUX_EXPONENTIAL) {
+        cx  = expf((df * df + 0.25f * powf(dy + 0.5f * (SE - NE), 2)) * mct);
+        cxd = expf((db * db + 0.25f * powf(dy + 0.5f * (SW - NW), 2)) * mct);
+    } else {
+        cx =
+            quadratic((df * df + 0.25f * powf(dy + 0.5f * (SE - NE), 2)) * mct);
+        cxd =
+            quadratic((db * db + 0.25f * powf(dy + 0.5f * (SW - NW), 2)) * mct);
+    }
+    delta += (cx * df - cxd * db);
+
+    // half-d's and conductance along second dimension
+    df = S - C;
+    db = C - N;
+
+    if (fftype == AF_FLUX_EXPONENTIAL) {
+        cx  = expf((df * df + 0.25f * powf(dx + 0.5f * (SE - SW), 2)) * mct);
+        cxd = expf((db * db + 0.25f * powf(dx + 0.5f * (NE - NW), 2)) * mct);
+    } else {
+        cx =
+            quadratic((df * df + 0.25f * powf(dx + 0.5f * (SE - SW), 2)) * mct);
+        cxd =
+            quadratic((db * db + 0.25f * powf(dx + 0.5f * (NE - NW), 2)) * mct);
+    }
+    delta += (cx * df - cxd * db);
+
+    return delta;
+}
+
+__device__
+float computeCurvatureBasedUpdate(const float mct, const float C,
+                                  const float S, const float N,
+                                  const float W, const float E,
+                                  const float SE, const float SW,
+                                  const float NE, const float NW,
+                                  const af::fluxFunction fftype,
+                                  const int clamped_x, const int clamped_y,
+                                  const int stride0, const int stride1) {
+    float delta     = 0;
+    float prop_grad = 0;
+
+    float df0, db0;
+    float dx, dy, df, db, cx, cxd, gmf, gmb, gmsqf, gmsqb;
+
+    // centralized derivatives
+    dx = (E - W) * 0.5f;
+    dy = (S - N) * 0.5f;
+
+    // half-d's and conductance along first dimensio

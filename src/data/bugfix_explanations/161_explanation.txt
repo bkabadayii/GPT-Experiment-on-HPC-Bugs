@@ -1,0 +1,4 @@
+The performance bug in the code is that the function `seed.getVertexDistribution()[0].push_back(numberOfVertices)` is called in a loop in the `specializedCreate()` function. This function is called for each vertex in the mesh, which can be very slow for large meshes. Instead, we can create a vector of vertex indices and assign it to the `seed` mesh's `vertexDistribution` member variable all at once.
+
+Here is the fixed code:
+

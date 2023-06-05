@@ -1,0 +1,4 @@
+The performance bug in the code is that it shuffles the entire dataset before splitting it into training and test sets. This can be very slow for large datasets. To fix this, we can shuffle only the indices of the dataset and then use these indices to split the dataset into training and test sets.
+
+Here is the fixed code:
+

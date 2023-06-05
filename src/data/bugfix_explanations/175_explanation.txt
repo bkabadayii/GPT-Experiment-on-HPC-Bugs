@@ -1,0 +1,5 @@
+The code seems to be a part of a larger project that uses OpenMP for parallelization. However, without the rest of the code, it is difficult to determine the exact performance bugs. Here is the fixed code with some assumptions:
+
+- The code is compiled with OpenMP support.
+- The code is compiled with the correct architecture-specific parameters.
+

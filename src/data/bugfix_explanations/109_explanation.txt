@@ -1,0 +1,6 @@
+The performance bug in this code is caused by the use of function pointers in the `Status_line_curve_less_functor` class. Function pointers are slower than virtual functions, which can be used instead to improve performance.
+
+Here is the fixed code:
+
+
+<CODE>

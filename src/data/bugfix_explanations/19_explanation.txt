@@ -1,0 +1,4 @@
+The performance bug in this code is not specified. However, one issue that stands out is that the `getParticleExclusions` method returns the exclusions by reference, but does not clear the vector before appending to it. This can lead to unexpected behavior if the vector passed in already contains elements.
+
+Here is the fixed code:
+

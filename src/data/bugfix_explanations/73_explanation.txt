@@ -1,0 +1,4 @@
+The performance bugs in the code are caused by unnecessary parallelization using OpenMP. Specifically, the `spmv2` and `advanced_spmv2` functions parallelize over the columns of the dense matrix `b`, which is unnecessary since the loop over the columns is already vectorized by default. This leads to unnecessary overhead and can actually slow down the code.
+
+To fix this, we can remove the OpenMP parallelization in these functions and keep the vectorization. The fixed code is shown below:
+

@@ -1,0 +1,116 @@
+One performance bug in this code is that the function gmx_mtop_atomnr_to_atom() performs a linear search through the entire atom array to find the atom with the given global index. This can be very slow for large systems. To fix this, we can add an array to the gmx_mtop_t struct that maps global atom indices to their position in the atom array. This array can be generated in the gmx_mtop_finalize() function.
+
+Here is the full fixed code:
+
+/*
+ * 
+ *                This source code is part of
+ * 
+ *                 G   R   O   M   A   C   S
+ * 
+ *          GROningen MAchine for Chemical Simulations
+ * 
+ *                        VERSION 3.2.0
+ * Written by David van der Spoel, Erik Lindahl, Berk Hess, and others.
+ * Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+ * Copyright (c) 2001-2004, The GROMACS development team,
+ * check out http://www.gromacs.org for more information.
+
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * If you want to redistribute modifications, please consider that
+ * scientific software is very special. Version control is crucial -
+ * bugs must be traceable. We will be happy to consider code for
+ * inclusion in the official distribution, but derived work must not
+ * be called official GROMACS. Details are found in the README & COPYING
+ * files - if they are missing, get the official version at www.gromacs.org.
+ * 
+ * To help us fund GROMACS development, we humbly ask that you cite
+ * the papers on the package - you can find them in the top README file.
+ * 
+ * For more info, check our website at http://www.gromacs.org
+ * 
+ * And Hey:
+ * Gromacs Runs On Most of All Computer Systems
+ */
+#include "typedefs.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Should be called after generating or reading mtop,
+ * to set some compute intesive variables to avoid
+ * N^2 operations later on.
+ */
+void
+gmx_mtop_finalize(gmx_mtop_t *mtop)
+{
+    int i;
+    for (i = 0; i < mtop->atoms.nr; i++) {
+        mtop->atomindex[i] = -1;
+    }
+    for (i = 0; i < mtop->atoms.nr; i++) {
+        mtop->atomindex[mtop->atoms.atom[i].nr] = i;
+    }
+}
+
+
+/* Returns the total number of charge groups in mtop */
+int
+ncg_mtop(const gmx_mtop_t *mtop)
+{
+    return mtop->cg.nr;
+}
+
+
+/* Returns a pointer to the t_atom struct belonging to atnr_global.
+ * This can be an expensive operation, so if possible use
+ * one of the atom loop constructs below.
+ */
+void
+gmx_mtop_atomnr_to_atom(const gmx_mtop_t *mtop,int atnr_global,
+                        t_atom **atom)
+{
+    int i = mtop->atomindex[atnr_global];
+    if (i >= 0) {
+        *atom = &mtop->atoms.atom[i];
+    } else {
+        *atom = NULL;
+    }
+}
+
+
+/* Returns a pointer to the molecule interaction array ilist_mol[F_NRE]
+ * and the local atom number in the molecule belonging to atnr_global.
+ */
+void
+gmx_mtop_atomnr_to_ilist(const gmx_mtop_t *mtop,int atnr_global,
+                         t_ilist **ilist_mol,int *atnr_offset)
+{
+    int i = mtop->atomindex[atnr_global];
+    if (i >= 0) {
+        int j;
+        for (j = 0; j < F_NRE; j++) {
+            if (mtop->ilist[j].nr > 0 && mtop->ilist[j].il[i] >= 0) {
+                *ilist_mol = &mtop->ilist[j];
+                *atnr_offset = mtop->ilist[j].il[i];
+                return;
+            }
+        }
+    }
+    *ilist_mol = NULL;
+    *atnr_offset = -1;
+}
+
+
+/* Returns the molecule block index
+ * and the molecule number in the block
+ * and the atom number offset for the atom indices in moltype
+ * belonging to atnr_global.
+ */
+void
+gmx_mtop_atomn

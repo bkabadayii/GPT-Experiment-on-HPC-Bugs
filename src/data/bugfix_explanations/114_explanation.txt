@@ -1,0 +1,4 @@
+The performance bug in the code is that the function `ChooseScalingFactor()` is called multiple times with the same arguments, which is unnecessary and can slow down the optimization process. To fix this, we can store the scaling factor calculated in the previous iteration and reuse it in the next iteration if the arguments are the same.
+
+Here is the fixed code:
+

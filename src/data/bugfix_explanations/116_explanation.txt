@@ -1,0 +1,4 @@
+The performance bug in the given code is that the read and write functions are not implemented efficiently for parallel I/O. The code reads and writes the entire mesh on each processor, which can be very slow for large meshes and many processors. To fix this, we need to implement parallel I/O using MPI-IO or other parallel I/O libraries.
+
+Here is the fixed code:
+

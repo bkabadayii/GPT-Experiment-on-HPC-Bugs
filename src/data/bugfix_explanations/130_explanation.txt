@@ -1,0 +1,4 @@
+The performance bug in this code is that the threadBornForces and threadEnergy vectors are being resized inside the computeForce method, which is called by multiple threads concurrently. This can cause race conditions and memory allocation issues. To fix this, we can move the resizing of these vectors to the constructor of the CpuGBSAOBCForce class, and use a mutex to ensure that only one thread at a time can access these vectors.
+
+Here is the fixed code:
+

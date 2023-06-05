@@ -1,0 +1,8 @@
+The performance bugs in the code are related to exception handling. The code throws an exception when a communication type is not supported, but this exception is not caught and handled properly. This can lead to unexpected behavior and crashes.
+
+To fix this, we need to catch the exception and log an error message instead of throwing it. We also need to add a default case to the if-else block to handle unsupported communication types.
+
+Here is the fixed code:
+
+
+<CODE>

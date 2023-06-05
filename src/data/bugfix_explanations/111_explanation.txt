@@ -1,0 +1,105 @@
+The performance bug in the code is that the std::vector<T> currentCenterColors and std::vector<AccType> currentMeanColors are being created and destroyed in every iteration of the inner loop. This is causing unnecessary memory allocation and deallocation, leading to poor performance. To fix this, we can move the creation of these vectors outside the inner loop and reuse them in every iteration.
+
+Here is the fixed code:
+
+/*******************************************************
+ * Copyright (c) 2015, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
+#pragma once
+#include <Array.hpp>
+#include <vector>
+#include <utility.hpp>
+#include <type_traits>
+
+namespace cpu
+{
+namespace kernel
+{
+template<typename T, bool IsColor>
+void meanShift(Array<T> out, const Array<T> in, const float spatialSigma,
+               const float chromaticSigma, const unsigned numIterations)
+{
+    typedef typename std::conditional< std::is_same<T, double>::value, double, float >::type AccType;
+
+    const af::dim4 dims     = in.dims();
+    const af::dim4 istrides = in.strides();
+    const af::dim4 ostrides = out.strides();
+    const unsigned bCount   = (IsColor ? 1 : dims[2]);
+    const unsigned channels = (IsColor ? dims[2] : 1);
+    const dim_t radius      = std::max((int)(spatialSigma * 1.5f), 1);
+    const AccType cvar      = chromaticSigma * chromaticSigma;
+
+    std::vector<T> currentCenterColors(channels, 0);
+    std::vector<AccType> currentMeanColors(channels, 0);
+
+    for (dim_t b3=0; b3<dims[3]; ++b3) {
+        for (unsigned b2=0; b2<bCount; ++b2) {
+
+            T *      outData = out.get() + b2 * ostrides[2] + b3 * ostrides[3];
+            const T * inData = in.get()  + b2 * istrides[2] + b3 * istrides[3];
+
+            for (dim_t j=0; j<dims[1]; ++j) {
+
+                dim_t j_in_off  = j*istrides[1];
+                dim_t j_out_off = j*ostrides[1];
+
+                for (dim_t i=0; i<dims[0]; ++i) {
+
+                    dim_t i_in_off  = i*istrides[0];
+                    dim_t i_out_off = i*ostrides[0];
+
+                    for (unsigned ch=0; ch<channels; ++ch)
+                        currentCenterColors[ch] = inData[j_in_off + i_in_off + ch*istrides[2]];
+
+                    int meanPosJ = j;
+                    int meanPosI = i;
+
+                    // scope of meanshift iterations begin
+                    for (unsigned it=0; it<numIterations; ++it) {
+
+                        int oldMeanPosJ   = meanPosJ;
+                        int oldMeanPosI   = meanPosI;
+                        unsigned count = 0;
+                        int shift_y = 0;
+                        int shift_x = 0;
+
+                        for (unsigned ch=0; ch<channels; ++ch)
+                            currentMeanColors[ch] = 0;
+
+                        // Windowing operation
+                        for (dim_t wj=-radius; wj<=radius; ++wj) {
+
+                            int hit_count = 0;
+                            dim_t tj = meanPosJ + wj;
+                            if (tj<0 || tj>dims[1]-1) continue;
+
+                            dim_t tjstride = tj*istrides[1];
+
+                            for (dim_t wi=-radius; wi<=radius; ++wi) {
+
+                                dim_t ti = meanPosI + wi;
+                                if (ti<0 || ti>dims[0]-1) continue;
+
+                                dim_t tistride = ti*istrides[0];
+
+                                AccType norm = 0;
+                                for (unsigned ch=0; ch<channels; ++ch) {
+                                    T tempColor = inData[ tistride + tjstride + ch*istrides[2] ];
+                                    AccType diff = static_cast<AccType>(currentCenterColors[ch]) -
+                                                   static_cast<AccType>(tempColor);
+                                    norm += (diff * diff);
+                                    currentMeanColors[ch] += static_cast<AccType>(tempColor);
+                                }
+
+                                if (norm <= cvar) {
+                                    shift_x += ti;
+                                    ++hit_count;
+                                }
+                            }
+                            count   += hit_count;

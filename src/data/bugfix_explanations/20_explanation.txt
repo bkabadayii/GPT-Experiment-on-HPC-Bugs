@@ -1,0 +1,6 @@
+The performance bug in the code is that the kernel is launched with a grid size of `ceildiv(tau->get_size()[1], block_size.x)` blocks, where `tau->get_size()[1]` is the number of columns in the `tau` matrix. However, the kernel is accessing the `stop_status` array with an index of `tidx`, which is computed as `static_cast<size_type>(blockDim.x) * blockIdx.x + threadIdx.x`. This means that the kernel is accessing memory beyond the end of the `stop_status` array when `tidx >= tau->get_size()[1]`. This can cause undefined behavior and crashes.
+
+To fix this bug, we need to launch the kernel with a grid size of `ceildiv(tau->get_size()[1], block_size.x)` blocks, but we also need to add a check inside the kernel to make sure that `tidx` is less than `num_cols`. If `tidx >= num_cols`, the kernel should return without doing anything.
+
+Here is the fixed code:
+

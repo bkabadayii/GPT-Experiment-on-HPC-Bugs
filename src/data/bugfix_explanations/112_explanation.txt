@@ -1,0 +1,4 @@
+The performance bug in the code is that the `processed` array in the `OrderTransferOperator::MultTranspose` method is being resized and initialized to zero in every iteration of the loop. This is unnecessary and can be moved outside the loop. 
+
+Here is the fixed code:
+

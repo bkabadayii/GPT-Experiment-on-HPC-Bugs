@@ -1,0 +1,6 @@
+The performance bug in this code is that the loop that calculates the range of each CPU is not efficient. Specifically, the loop uses an integer division operation and a subtraction operation in each iteration, which can be slow for large values of `i`. To fix this, we can replace the loop with a single integer division operation that calculates the width of each CPU range directly.
+
+Here is the fixed code:
+
+
+<CODE>

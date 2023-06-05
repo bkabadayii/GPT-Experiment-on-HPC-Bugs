@@ -1,0 +1,31 @@
+The performance bug in this code is that it is using exceptions for control flow, which can be expensive. Instead, it should use error codes to handle errors.
+
+Here is the fixed code:
+
+/*******************************************************
+ * Copyright (c) 2014, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
+#include <af/image.h>
+#include "error.hpp"
+
+namespace af
+{
+
+features fast(const array& in, const float thr, const unsigned arc_length,
+                const bool non_max, const float feature_ratio)
+{
+    af_features temp;
+    af_err err = af_fast(&temp, in.get(), thr, arc_length, non_max, feature_ratio);
+    if (err != AF_SUCCESS) {
+        throw af::exception("Fast feature detection failed", err);
+    }
+    features out(temp);
+    return out;
+}
+

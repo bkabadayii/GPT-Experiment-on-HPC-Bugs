@@ -1,0 +1,106 @@
+The performance bug in this code is that the `dispatch` function is not returning a value in all cases. Specifically, in the `dispatch` function with the `if target` statement, there is no return statement if the target is not recognized as either device or host. This can lead to undefined behavior and potential crashes.
+
+To fix this bug, we can add a default return statement at the end of the `dispatch` function that returns a default value. For example, we can return an empty `std::tuple`:
+
+
+<CODE>
+
+
+Here is the full fixed code:
+
+```
+#pragma once
+
+#include <type_traits>
+#include <algorithm>
+#ifdef _NVHPC_CUDA
+#include <nv/target>
+#endif
+
+#if defined(__CUDACC__) ||  defined(_NVHPC_CUDA) || (defined(__clang__) && defined(__CUDA__))
+#define QUDA_CUDA_CC
+#endif
+
+namespace quda {
+
+  namespace target {
+
+#ifdef _NVHPC_CUDA
+
+    // nvc++: run-time dispatch using if target
+    template <template <bool, typename ...> class f, typename ...Args>
+    __host__ __device__ auto dispatch(Args &&... args)
+    {
+      if target (nv::target::is_device) {
+        return f<true>()(args...);
+      } else if target (nv::target::is_host) {
+        return f<false>()(args...);
+      }
+      return std::tuple<>(); // default return value
+    }
+
+#else
+
+    // nvcc or clang: compile-time dispatch
+    template <template <bool, typename ...> class f, typename ...Args>
+      __host__ __device__ auto dispatch(Args &&... args)
+    {
+#ifdef __CUDA_ARCH__
+      return f<true>()(args...);
+#else
+      return f<false>()(args...);
+#endif
+      return std::tuple<>(); // default return value
+    }
+
+#endif
+
+    template <bool is_device> struct is_device_impl { constexpr bool operator()() { return false; } };
+    template <> struct is_device_impl<true> { constexpr bool operator()() { return true; } };
+
+    /**
+       @brief Helper function that returns if the current execution
+       region is on the device
+    */
+    __device__ __host__ inline bool is_device() { return dispatch<is_device_impl>(); }
+
+
+    template <bool is_device> struct is_host_impl { constexpr bool operator()() { return true; } };
+    template <> struct is_host_impl<true> { constexpr bool operator()() { return false; } };
+
+    /**
+       @brief Helper function that returns if the current execution
+       region is on the host
+    */
+    __device__ __host__ inline bool is_host() { return dispatch<is_host_impl>(); }
+
+
+    template <bool is_device> struct block_dim_impl { dim3 operator()() { return dim3(1, 1, 1); } };
+#ifdef QUDA_CUDA_CC
+    template <> struct block_dim_impl<true> { __device__ dim3 operator()() { return dim3(blockDim.x, blockDim.y, blockDim.z); } };
+#endif
+
+    /**
+       @brief Helper function that returns the thread block
+       dimensions.  On CUDA this returns the intrinsic blockDim,
+       whereas on the host this returns (1, 1, 1).
+    */
+    __device__ __host__ inline dim3 block_dim() { return dispatch<block_dim_impl>(); }
+
+
+    template <bool is_device> struct grid_dim_impl { dim3 operator()() { return dim3(1, 1, 1); } };
+#ifdef QUDA_CUDA_CC
+    template <> struct grid_dim_impl<true> { __device__ dim3 operator()() { return dim3(gridDim.x, gridDim.y, gridDim.z); } };
+#endif
+
+    /**
+       @brief Helper function that returns the grid dimensions.  On
+       CUDA this returns the intrinsic blockDim, whereas on the host
+       this returns (1, 1, 1).
+    */
+    __device__ __host__ inline dim3 grid_dim() { return dispatch<grid_dim_impl>(); }
+
+
+    template <bool is_device> struct block_idx_impl { dim3 operator()() { return dim3(0, 0, 0); } };
+#ifdef QUDA_CUDA_CC
+    template <> struct block_idx_impl<true> { __device__

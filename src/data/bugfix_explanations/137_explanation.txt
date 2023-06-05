@@ -1,0 +1,1 @@
+There are no performance bugs in this code as it only contains variable assignments

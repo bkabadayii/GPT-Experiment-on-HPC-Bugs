@@ -1,0 +1,1 @@
+The code seems to be a header file with some typedefs and enums. There are no performance bugs in this code

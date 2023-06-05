@@ -1,0 +1,12 @@
+The performance bugs in the code are:
+
+1. The loop in the `dgemv_kernel_16x4` function should increment by 16 instead of 4, as it is processing 4 columns at a time and each column has 16 elements.
+
+2. The loop in the `dgemv_kernel_16x1` function should also increment by 16 instead of 4, for the same reason as above.
+
+3. The `zero_y` function can be optimized by using memset instead of a loop.
+
+4. The `add_y` function can be optimized by unrolling the loop and processing 4 elements at a time.
+
+Here is the fixed code:
+

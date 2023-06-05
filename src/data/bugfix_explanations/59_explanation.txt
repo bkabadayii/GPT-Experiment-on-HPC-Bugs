@@ -1,0 +1,74 @@
+The performance bug in this code is that it is not checking the maximum work group size of the device before setting the work group size for each kernel. This can cause the kernel to fail if the work group size is too large for the device. To fix this, we need to add a check for the maximum work group size before setting the work group size for each kernel.
+
+Here is the full fixed code:
+
+/* -------------------------------------------------------------------------- *
+ *                                   OpenMM                                   *
+ * -------------------------------------------------------------------------- *
+ * This is part of the OpenMM molecular simulation toolkit originating from   *
+ * Simbios, the NIH National Center for Physics-Based Simulation of           *
+ * Biological Structures at Stanford, funded under the NIH Roadmap for        *
+ * Medical Research, grant U54 GM072970. See https://simtk.org.               *
+ *                                                                            *
+ * Portions copyright (c) 2010-2013 Stanford University and the Authors.      *
+ * Authors: Peter Eastman                                                     *
+ * Contributors:                                                              *
+ *                                                                            *
+ * This program is free software: you can redistribute it and/or modify       *
+ * it under the terms of the GNU Lesser General Public License as published   *
+ * by the Free Software Foundation, either version 3 of the License, or       *
+ * (at your option) any later version.                                        *
+ *                                                                            *
+ * This program is distributed in the hope that it will be useful,            *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+ * GNU Lesser General Public License for more details.                        *
+ *                                                                            *
+ * You should have received a copy of the GNU Lesser General Public License   *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *
+ * -------------------------------------------------------------------------- */
+
+#include "OpenCLSort.h"
+#include "OpenCLKernelSources.h"
+#include <map>
+
+using namespace OpenMM;
+using namespace std;
+
+OpenCLSort::OpenCLSort(OpenCLContext& context, SortTrait* trait, unsigned int length) : context(context), trait(trait),
+            dataRange(NULL), bucketOfElement(NULL), offsetInBucket(NULL), bucketOffset(NULL), buckets(NULL), dataLength(length) {
+    // Create kernels.
+
+    std::map<std::string, std::string> replacements;
+    replacements["DATA_TYPE"] = trait->getDataType();
+    replacements["KEY_TYPE"] =  trait->getKeyType();
+    replacements["SORT_KEY"] = trait->getSortKey();
+    replacements["MIN_KEY"] = trait->getMinKey();
+    replacements["MAX_KEY"] = trait->getMaxKey();
+    replacements["MAX_VALUE"] = trait->getMaxValue();
+    replacements["VALUE_IS_INT2"] = (trait->getDataType() == std::string("int2") ? "1" : "0");
+    cl::Program program = context.createProgram(context.replaceStrings(OpenCLKernelSources::sort, replacements));
+    shortListKernel = cl::Kernel(program, "sortShortList");
+    computeRangeKernel = cl::Kernel(program, "computeRange");
+    assignElementsKernel = cl::Kernel(program, "assignElementsToBuckets");
+    computeBucketPositionsKernel = cl::Kernel(program, "computeBucketPositions");
+    copyToBucketsKernel = cl::Kernel(program, "copyDataToBuckets");
+    sortBucketsKernel = cl::Kernel(program, "sortBuckets");
+
+    // Work out the work group sizes for various kernels.
+
+    unsigned int maxGroupSize = std::min(256, (int) context.getDevice().getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+    int maxSharedMem = context.getDevice().getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+    unsigned int maxLocalBuffer = (unsigned int) ((maxSharedMem/trait->getDataSize())/2);
+    unsigned int maxRangeSize = std::min(maxGroupSize, (unsigned int) computeRangeKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(context.getDevice()));
+    unsigned int maxPositionsSize = std::min(maxGroupSize, (unsigned int) computeBucketPositionsKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(context.getDevice()));
+    unsigned int maxShortListSize = shortListKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(context.getDevice());
+    isShortList = (length <= maxLocalBuffer && length < maxShortListSize);
+    for (rangeKernelSize = 1; rangeKernelSize*2 <= maxRangeSize; rangeKernelSize *= 2)
+        ;
+    positionsKernelSize = std::min(rangeKernelSize, maxPositionsSize);
+    sortKernelSize = (isShortList ? rangeKernelSize : rangeKernelSize/2);
+    if (rangeKernelSize > length)
+        rangeKernelSize = length;
+    if (sortKernelSize > maxLocalBuffer)
+        sortKernelSize = maxLocalBuffer;

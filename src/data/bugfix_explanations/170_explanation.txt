@@ -1,0 +1,63 @@
+The performance bug in this code is that it creates multiple device arrays unnecessarily. Instead, it should create a single device array for all the output data and then extract the individual arrays from it. Here is the fixed code:
+
+/*******************************************************
+ * Copyright (c) 2014, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
+#include <af/dim4.hpp>
+#include <af/defines.h>
+#include <af/features.h>
+#include <ArrayInfo.hpp>
+#include <Array.hpp>
+#include <err_cuda.hpp>
+#include <handle.hpp>
+#include <kernel/fast.hpp>
+
+using af::dim4;
+using af::features;
+
+namespace cuda
+{
+
+template<typename T>
+features fast(const Array<T> &in, const float thr, const unsigned arc_length,
+                const bool non_max, const float feature_ratio)
+{
+    const dim4 dims = in.dims();
+
+    unsigned nfeat;
+    float *out;
+
+    kernel::fast<T>(&nfeat, &out, in, thr, arc_length, non_max, feature_ratio);
+
+    const dim4 out_dims(nfeat);
+
+    Array<float> * feat_data = createDeviceDataArray<float>(out_dims, out);
+
+    features feat;
+    feat.setNumFeatures(nfeat);
+    feat.setX(getHandle<float>(*feat_data));
+    feat.setY(getHandle<float>(*feat_data) + nfeat);
+    feat.setScore(getHandle<float>(*feat_data) + 2 * nfeat);
+    feat.setOrientation(createValueArray<float>(out_dims, 0.0f));
+    feat.setSize(createValueArray<float>(out_dims, 1.0f));
+
+    return feat;
+}
+
+#define INSTANTIATE(T)\
+    template features fast<T>(const Array<T> &in, const float thr, const unsigned arc_length,  \
+                              const bool non_max, const float feature_ratio);
+
+INSTANTIATE(float )
+INSTANTIATE(double)
+INSTANTIATE(char  )
+INSTANTIATE(int   )
+INSTANTIATE(uint  )
+INSTANTIATE(uchar )
+

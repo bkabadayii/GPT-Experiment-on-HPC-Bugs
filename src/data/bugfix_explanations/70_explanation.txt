@@ -1,0 +1,6 @@
+The performance bug in the code is that the loop in the `dasum_kernel` function is unrolled too much, causing unnecessary instructions to be executed. To fix this, we can reduce the unrolling factor to 4, which is still enough to take advantage of SIMD instructions.
+
+Here is the fixed code:
+
+
+<CODE>

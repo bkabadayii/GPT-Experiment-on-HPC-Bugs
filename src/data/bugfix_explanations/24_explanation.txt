@@ -1,0 +1,4 @@
+The performance bug in the code is that the variables `warp_size`, `warp_size_log2`, and `c_fullWarpMask` are declared as static constants. This means that every time the code is executed, these variables are re-initialized, which can cause unnecessary overhead. To fix this, we can declare them as macros instead.
+
+Here is the fixed code:
+

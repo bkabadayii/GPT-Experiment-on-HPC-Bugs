@@ -1,0 +1,4 @@
+The performance bug in the code is that the computation_frontier vector is being resized in every iteration of the do-while loop, which can cause significant overhead. To fix this, we can initialize the vector with the maximum possible size at the beginning of the function. 
+
+Here is the fixed code:
+

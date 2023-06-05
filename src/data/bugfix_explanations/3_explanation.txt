@@ -1,0 +1,4 @@
+The bug in the code is in the line `rotated_points.size();` inside the `optimize_along_OBB_axes` function. This line does not do anything and should be removed.
+
+Here is the full fixed code:
+
